@@ -24,6 +24,12 @@
 			<form id='event-form'>
 				<label for="name">Event Name: </label>
 				<input type="text" name="" id="name" required />
+				<div id="section">
+					<input type="radio" name="section" id="proposed" value="proposed" required />
+					<label for="proposed">Proposed</label>
+					<input type="radio" name="section" id="accepted" value="accepted"/>
+					<label for="proposed">Accepted</label>
+				</div>
 				<label for="startTime">Start Time: </label>
 				<input type="datetime-local" name="startTime" id="startTime" class="event-datetime" required />
 				<label for="endTime">End Time: </label>

@@ -55,6 +55,10 @@ function populateData(eventData) {
 		}
 		else console.log("Could not find field " + item);
 	}
+	
+	//set section radio button in included
+	if (eventData["section"]) document.getElementById(eventData["section"]).checked = true;
+	
 }
 
 /**
@@ -96,13 +100,24 @@ function eventSubmit(event) {
 	//store data in {Object} eventData
 	let eventData = {};
 	eventData["id"] = !newEvent ? id : -1;
-	for (let item of items) eventData[item.id] = item.value;
+	for (let item of items) {
+		//interprets based on input type 
+		switch(item.type) {
+			case "submit":
+				break;
+			case "radio":
+				if (item.checked) eventData[item.id] = item.value;
+				break;
+			default:
+				eventData[item.id] = item.value;
+		}
+	}
 	
 	//send object to server as json
-	let response = postData("event.json", eventData.stringify(), "application/json");
+	let response = postData("event.json", JSON.stringify(eventData), "application/json");
 	
 	//verify data was sent successfully, alert user if not
 	if (!response) alert("Error: Request not sent");
 	else if (!response.ok) alert(`Request Failed: ${events.status}`);
 }
-document.addEventListener("load", () => document.getElementById("event-form").onsubmit = eventSubmit);
+document.addEventListener("load", () => { document.getElementById("event-form").onsubmit = eventSubmit; });
