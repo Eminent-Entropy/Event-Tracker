@@ -1,0 +1,23 @@
+{
+	"accepted": [
+		{
+			"id": 1,
+			"name": "Test Event",
+			"startTime": "2023-04-30T08:30:00.000Z",
+			"endTime": "2023-04-30T09:30:00.000Z",
+			"people": "There are quite a few people involved",
+			"desc": "This would be a nice and long description about all the things we kinda wanna get up to ya know?"
+		},
+		{
+			"id": 2,
+			"name": "Test Event 2",
+			"startTime": "2023-04-28T21:30:00.000Z",
+			"endTime": "2023-04-29T22:30:00.000Z",
+			"people": "There are quite a few people involved",
+			"desc": "This would be a nice and long description."
+		}
+	],
+	"proposed": [
+	
+	]
+}

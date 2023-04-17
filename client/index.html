@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8" content="width=device-width, initial-scale=1" name="viewport"/>
+		<title>Event Tracker - View</title>
+		<link rel="stylesheet" href="styles/main.css"/>
+		<link rel="stylesheet" href="styles/home.css"/>
+		<script type='text/javascript' src='scripts/getDateTime.js'></script>
+		<script type='text/javascript' src='scripts/fetchFile.js'></script>
+		<script type='text/javascript' src='scripts/EventItem.js'></script>
+		<script type='text/javascript' src='scripts/loadEvents.js'></script>
+	</head>
+	<body>
+		<div id='header'>
+			<div id='top-bar'>
+				<a id='home-link' href='index.html'><h1>Event Tracker</h1></a>
+			</div>
+			<div id='links'>
+				<li class='current-page'><a href='index.html'><span class='link'>View</span></a></li>
+				<li class=''><a href='event.html'><span class='link'>Add</span></a></li>
+			</div>
+		</div>
+		
+		<div id='body-container'>
+			<h2>Accepted Plans</h2>
+			<div id='accepted' class='event-section'>
+				<div id='event-1' class='event'>
+					<span class='event-topLine'>
+						<h3>Test Event</h3>
+						<span class='event-buttons'>
+							<button class='event-edit'>Edit</button>
+						</span>
+					</span>
+					<li class='event-datetime'>
+						Sunday, April 30<br/>
+						<time datetime='2023-04-30 08:30'>8:30 AM</time> - <time datetime='2023-04-30 09:30'>9:30 AM</time>
+					</li>
+					<li class='event-people'>There are quite a few people involved</li>
+					<li class='event-desc'>This would be a nice and long description about all the things we kinda wanna get up to ya know?</li>
+				</div>
+				<div id='event-2' class='event'>
+					<span class='event-topLine'>
+						<h3>Test Event 2</h3>
+						<span class='event-buttons'>
+							<button class='event-edit'>Edit</button>
+						</span>
+					</span>
+					<li class='event-datetime'>
+						<time datetime='2023-04-28 21:30'>Friday, April 28 9:30 PM</time><br/>
+						<time datetime='2023-04-29 22:30'>Saturday, April 28 10:30 PM</time>
+					</li>
+					<li class='event-people'>There are quite a few people involved</li>
+					<li class='event-desc'>This would be a nice and long description.</li>
+				</div>
+			</div>
+			<h2>Proposed Plans</h2>
+			<div id='proposed' class='event-section'>
+			
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8" content="width=device-width, initial-scale=1" name="viewport"/>
+		<title>Event Tracker - Editor</title>
+		<link rel="stylesheet" href="styles/main.css"/>
+		<link rel="stylesheet" href="styles/event.css"/>
+		<script type='text/javascript' src='scripts/getDateTime.js'></script>
+		<script type='text/javascript' src='scripts/fetchFile.js'></script>
+		<script type='text/javascript' src='scripts/editEvent.js'></script>
+	</head>
+	<body>
+		<div id='header'>
+			<div id='top-bar'>
+				<a id='home-link' href='index.html'><h1>Event Tracker</h1></a>
+			</div>
+			<div id='links'>
+				<li class=''><a href='index.html'><span class='link'>View</span></a></li>
+				<li class='current-page'><a href='event.html'><span class='link'>Add</span></a></li>
+			</div>
+		</div>
+		
+		<div id='body-container'>
+			<form id='event-form'>
+				<label for="name">Event Name: </label>
+				<input type="text" name="" id="name" required />
+				<label for="startTime">Start Time: </label>
+				<input type="datetime-local" name="startTime" id="startTime" class="event-datetime" required />
+				<label for="endTime">End Time: </label>
+				<input type="datetime-local" name="endTime" id="endTime" class="event-datetime" required />
+				<label for="people">People Involved: </label>
+				<input type="text" name="people" id="people"/>
+				<label for="desc">Description: </label>
+				<input type="text" name="desc" id="desc"/>
+				<input type="submit" id='submit' value="Save"/>
+			</form>
+		</div>
+	</body>
+</html>

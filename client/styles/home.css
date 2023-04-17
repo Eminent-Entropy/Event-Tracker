@@ -1,0 +1,44 @@
+.event-section {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+/**
+ * Events
+ */
+.event {
+	margin: 10px;
+	width: 300px;
+	padding: 10px;
+	display: flex;
+	flex-direction: column;
+	
+	list-style-type: none;
+	border: var(--main-color) 2px solid;
+}
+
+.event h3 {
+	margin: 0;
+}
+
+.event li {
+	border-top: var(--main-color) 1px solid;
+	padding: 5px 0;
+}
+
+.event-topLine {
+	display: flex;
+	justify-content: space-between;
+	padding-bottom: 5px;
+}
+
+.event-topLine button {
+	background-color: var(--background-color);
+	border: var(--main-color) 1px solid;
+	color: inherit;
+}
+
+.event-topLine button:active {
+	background-color: var(--main-color);
+	color: var(--background-color);
+}
