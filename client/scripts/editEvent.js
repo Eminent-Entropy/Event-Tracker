@@ -117,7 +117,7 @@ function eventSubmit(event) {
 	let response = postData("event.json", JSON.stringify(eventData), "application/json");
 	
 	//verify data was sent successfully, alert user if not
-	if (!response) alert("Error: Request not sent");
+	if (!response) alert("Error: Request not recived");
 	else if (!response.ok) alert(`Request Failed: ${events.status}`);
 }
 document.addEventListener("load", () => { document.getElementById("event-form").onsubmit = eventSubmit; });

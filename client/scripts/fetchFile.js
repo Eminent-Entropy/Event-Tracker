@@ -5,7 +5,7 @@ let eventServer = new URL("http://eventtracker.eminent.entropy");
  * @param {string} filePath - path to requested file on server
  * @param {string} dataType - type of data requested (text, json, ect)
  * @param {Object} [headers] - request headers if needed
- * @returns {dataType} response - data returned by the server, decoded as indended
+ * @returns {Response} response - data returned by the server, decoded as indended
  */
 function fetchFile(filePath, dataType, headers={}) {
 	//setup URL
@@ -41,23 +41,19 @@ function fetchFile(filePath, dataType, headers={}) {
  * @param {string} filePath - path to requested file on server
  * @param {string} data - stringified data to be sent to server
  * @param {string} contentType - content type header for POST request
- * @param {Object} [searchParams] - URL search parameters if needed 
+ * @param {Object} [headers] - request headers if needed 
  * @returns {Response} response - server's response to the request
  */
-function postData(filePath, data, contentType, searchParams=undefined) {
+function postData(filePath, data, contentType, headers={}) {
 	//setup URL
 	let fileURL = eventServer;
 	fileURL.pathname = `/${filePath}`;
-	if (searchParams)
-		for (let key in searchParams) fileURL.searchParams.set(key, searchParams[key]);
+
+	headers["method"] = "POST";
+	headers["headers"] = {"Content-Type" : contentType};
+	headers["body"] = data;
 	
-	fetch(fileURL, {
-		method: "POST",
-		headers: {
-			"Content-Type": contentType
-		},
-		body: data
-	})
+	fetch(fileURL, headers)
 		.then(response => {
 			//return the server's response, log if there is an HTTP error
 			if (response.ok)
