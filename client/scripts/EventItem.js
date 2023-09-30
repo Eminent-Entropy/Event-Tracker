@@ -12,7 +12,7 @@ class EventItem {
 	}
 	
 	editEvent() {
-		alert("edit!");
+		window.location.replace(`./event.html?id=${this.id}`);
 	}
 	
 	/**
@@ -149,9 +149,5 @@ class EventItem {
 			end.text = `${getDay(this.endTime)} $(getTime(this.endTime)}`;
 			
 		return datetime;
-	}
-	
-	edit() {
-		window.location.replace(`./event.html?id=${this.id}`);
 	}
 }
