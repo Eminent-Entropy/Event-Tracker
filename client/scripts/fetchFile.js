@@ -7,14 +7,13 @@ let eventServer = new URL("http://eventtracker.eminent.entropy");
  * @param {Object} [searchParams] - URL search parameters if needed
  * @returns {dataType} response - data returned by the server, decoded as indended
  */
-function fetchFile(filePath, dataType, searchParams=undefined) {
+function fetchFile(filePath, dataType, headers={}) {
 	//setup URL
 	let fileURL = eventServer;
 	fileURL.pathname = `/${filePath}`;
-	if (searchParams)
-		for (let key in searchParams) fileURL.searchParams.set(key, searchParams[key]);
 	
-	fetch(fileURL)
+	headers["method"] = "GET";
+	fetch(fileURL, headers)
 		.then(response => {
 			//If server replies with requested file, return it. Else log HTTP error
 			if (response.ok) {
