@@ -1,161 +1,177 @@
-const http = require("http");
-const path = require("path");
-const fs = require("fs");
+const fs = require('fs');
+const express = require("express");
+const bodyParser = require("body-parser");
+const pg = require('pg');
 
-class Server {
-    static requiredConfigs = ["port", "mimeLookup", "filesFolder"];
-    static defaultConfigs = {
-        "port": 80,
-        "mimeLookup": {
-            ".js": "application/javascript",
-            ".html": "text/html",
-            ".css": "text/css"
-        },
-        "filesFolder": "static"
-    };
+const app = express();
+app.use(bodyParser.urlencoded({ extended: true }));
+let pgClient = undefined; //db access information must be in config file
 
-    /**
-     * Ensures vaild config and returns a new Server instance 
-     * @param {string=} configFile - path to config file
-     * @returns {Server} Server
-     */
-    static init(configFile) {
-        if (!configFile) {
-            console.log("Using default configs...");
-            return new Server(this.defaultConfigs);
+
+/** CONFIGURATION **/
+
+const configFile = "config.json";
+//Overidden by config file
+let PORT = 80;
+let staticDir = "static";
+
+
+/** Handle Requests **/
+
+//Serve static files
+app.use(express.static(staticDir, {extensions:["html"], index: "index.html"}));
+
+//Serve requests for information about an event
+app.get("/event.json", (req, res) => {
+    try {
+        pgClient.query(`SELECT events.name, sections.name as section, starttime, endtime, people, description
+                        FROM events INNER JOIN sections
+                        ON events.sectionId = sections.id
+                        WHERE events.id = $1`,
+                        [req.query.id],
+                        (err, result) => {
+                            res.type("application/json");
+                            res.status(200);
+                            res.send(JSON.stringify({
+                                "event-id": req.query.id,
+                                "name": result.rows[0]["name"],
+                                "section": result.rows[0]["section"],
+                                "startTime": new Date(result.rows[0]["starttime"]),
+                                "endTime": new Date(result.rows[0]["endtime"]),
+                                "people": result.rows[0]["people"],
+                                "desc": result.rows[0]["description"]
+                            }));
+                        });
+    } catch(err) {
+        error500(err, res);
+    }
+});
+
+//Serve requests for list of all exisiting events
+app.get("/events.json", (req, res) => {
+    Promise.allSettled([
+        pgClient.query(`SELECT id, name, starttime, endtime, people, description 
+                    FROM events
+                    WHERE sectionId = 1;`),
+        pgClient.query(`SELECT id, name, starttime, endtime, people, description 
+                    FROM events
+                    WHERE sectionId = 2;`)
+    ]).then(results => {
+        res.type("application/json");
+        res.status(200);
+        res.send({
+            "accepted": results[0].value.rows,
+            "proposed": results[1].value.rows
+        })
+    });
+    
+});
+
+//Handle event addition and edit requests
+app.post("/submit-event", (req, res) => {
+    try {
+        if (req.body["event-id"] == -1) {
+            pgClient.query(`INSERT INTO events
+                            (name, sectionId, starttime, endtime, people, description)
+                            values($1, (SELECT id FROM sections WHERE name = $2), $3, $4, $5, $6);`,
+                            [req.body.name, req.body.section, new Date(req.body.startTime), new Date(req.body.endTime), req.body.people, req.body.desc],
+                            (err, result) => { if (err) error500(err, res); });
         }
-        
-        fs.readFile(configFile, (err, data) => {
-            /** @type {object} - parsed config json */
-            let config;
-
-            //reads config file if available
-            if (err) {
-                console.log(err);
-                console.log("Could not read config file, using default values...");
-                config = this.defaultConfigs;
-            }
-            else config = JSON.parse(data);
-
-            //ensures all requires configs are included
-            if ( !this.requiredConfigs.every(reqKey =>  reqKey in config) ){
-                console.log("Config file is invalid, using default values...");
-                config = this.defaultConfigs;
-            }
-
-            console.log("Configs loaded...");
-            return new Server(config);
-        });
-    }
-
-    /**
-     * Sets up variables and starts the server
-     * @param {object} config - Contains server configs
-     */
-    constructor(config) {
-        console.log("Starting server...");
-
-        /** @type {number} - port number */
-        this.port = config["port"];
-        /** @type {object} - object contains vaild mime types */
-        this.mimeLookup = config["mimeLookup"];
-        /** @type {string} - path to served files */
-        this.filesFolder = config["filesFolder"];
-
-        this.createServer();
-        this.server.listen(this.port);
-        console.log("Listening on port " + this.port);
-    }
-
-
-    /**
-     * Creates the http server
-     */
-    createServer() {
-        /** @type {http.Server} - http server */
-        this.server = http.createServer((req,res)=>{
-            switch(req.method){
-                case "GET":
-                    this.get(req, res);
-                    break;
-                case "POST":
-                    this.post(req, res)
-                    break;
-            }
-        });
-    }
-
-    /**
-     * Handles GET requests
-     * @param {http.IncomingMessage} req - HTTP Request
-     * @param {http.ServerResponse} res - HTTP Response
-     */
-    get(req, res) {
-        //setup file path
-        /** @type {string} - requested file url*/
-        let file;
-        if(req.url =="/")
-            file = "index.html";
-        else
-            file = req.url;
-
-        /** @type {string} - path to requested file */
-        let filepath = path.resolve(`./${this.filesFolder}/${file}`);
-
-        //ensures requested file is not outside the application
-        if (!filepath.includes(__dirname)) {
-            this.forbidden(res);
-            return;
+        else {
+            pgClient.query(`UPDATE events 
+                            SET name = $1, sectionId = (SELECT id FROM sections WHERE name = $2), starttime = $3, endtime = $4, people = $5, description = $6 
+                            WHERE id = $7;`, 
+                            [req.body.name, req.body.section, new Date(req.body.startTime), new Date(req.body.endTime), req.body.people, req.body.desc, req.body["event-id"]], 
+                            (err, result) => { if (err) error500(err, res); });
         }
-
-        //check mime
-        /** @type {string} - requested file extension */
-        let ext = path.extname(filepath);
-        /** @type {string} - requested mime type*/
-        let mimeType = this.mimeLookup[ext];
-        if(!mimeType){
-            this.notFound(res);
-            return;
-        }
-
-        //finds file and reads if available
-        fs.access(filepath, err => {
-            if(err){
-                this.notFound(res);
-                return;
-            }
-            res.writeHead(200,{"Content-Type": mimeType});
-            fs.createReadStream(filepath).pipe(res); //responds with file
-        });
+    } catch(err) {
+        error500(err, res);
     }
+    res.status(200);
+    res.redirect("/");
+});
 
-    /**
-     * Handles POST requests. Not needed now.
-     * @param {http.IncomingMessage} req - HTTP Request
-     * @param {http.ServerResponse} res - HTTP Response
-     */
-    post(req, res) {
-        
+//Handle event deletion requests
+app.post("/delete-event.json", (req, res) => {
+    try {
+        pgClient.query(`DELETE FROM events
+                        WHERE id = $1`,
+                        [req.query["id"]], 
+                        (err, result) => { 
+                            if (err) error500(err, res); 
+                            else {
+                                res.status(200);
+                                res.redirect("/");
+                            }
+                        });
+    } catch(err) {
+        error500(err, res);
     }
+})
 
-    /**
-     * Handles file not found errors
-     * @param {http.ServerResponse} response - HTTP Response
-     */
-    notFound(response) {
-        response.writeHead(404,{"content-type":"text/plain"});
-        response.write("404, could not find requested file.");
-        response.end();
-    }
 
-    /**
-     * Handles forbidden errors
-     * @param {http.ServerResponse} response - HTTP Response
-     */
-    forbidden(response) {
-        response.writeHead(403,{"content-type":"text/plain"});
-        response.write("403, Forbidden");
-        response.end();
-    }
+/** Request Errors **/
+
+//handle 500 errors
+app.use(function (err, req, res, next) {
+	error500(err, res)
+});
+
+/**
+ * Responds with server error and logs it to console
+ * @param {Error} err 
+ * @param {Response} res 
+ */
+function error500(err, res) {
+    console.error(err);
+	res.type("text/plain");
+	res.status(500);
+	res.send("500 - Server Error");
 }
-module.exports = Server;
+
+//handle 404 errors
+app.use(function(req, res) {
+    error404(res);
+});
+
+/**
+ * Responds with 404 error
+ * @param {Response} res 
+ */
+function error404(res) {
+    res.status(404);
+	//res.sendFile(__dirname + '/public/notfound.html');
+    res.send("404 - File Not Found");
+}
+
+
+/** Server Startup **/
+
+//Read config file if it exists and setup database access if available
+try {
+    let data = fs.readFileSync(configFile);
+    let configs = JSON.parse(data);
+    if (configs["port"]) PORT = configs["port"];
+    if (configs["filesFolder"]) staticDir = configs["filesFolder"];
+
+    try {
+        if (configs["pgClient"]) {
+            pgClient = new pg.Client({
+                user: configs["pgClient"]["user"],
+                password: configs["pgClient"]["password"],
+                host: configs["pgClient"]["host"],
+                port: configs["pgClient"]["port"],
+                database: configs["pgClient"]["database"]
+            });
+            pgClient.connect();
+        }
+        else console.log("No database information provided, static files only.");
+    } catch (err) { console.log("Error accessing database, static files only."); }
+} catch(err) {
+    console.log("Error reading config file, using defaults, static files only.");
+}
+
+//start server on specified port
+app.listen(PORT, function() {
+    console.log("Express started on http://localhost:" + PORT + "; press Ctrl-C to terminate.");
+});

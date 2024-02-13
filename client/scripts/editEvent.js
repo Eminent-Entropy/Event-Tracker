@@ -9,7 +9,7 @@ let id = currentURL.searchParams.get("id"); //id of event being edited
  */
 function editEvent() {
 	if (id) {
-		populateData(fetchEventData(id));
+		fetchEventData(id, populateData);
 		newEvent = false;
 		indicateEditing();
 	}
@@ -18,19 +18,20 @@ function editEvent() {
 /**
  * requests data from server about an event with specified id
  * @param {number} id - id of event
+ * @param {function} callback
  * @returns {Object} eventData - data about requested event
  */
-function fetchEventData(id) {
-	let eventData = fetchFile("event.json", "json", {"id": id});
-	//If server replies with requested data, return it. Else, alert user
-	if (eventData) {
-		eventData = eventData.parse();
-		return eventData;
-	}
-	else {
-		alert("Could not retrieve event data");
-		window.location.replace("./index.html");
-	}
+function fetchEventData(id, callback) {
+	fetchFile("event.json", "json", undefined, { "id": id }).then((eventData) => {
+		//If server replies with requested data, return it. Else, alert user
+		if (eventData) {
+			callback(eventData);
+		}
+		else {
+			alert("Could not retrieve event data");
+			window.location.replace("./index.html");
+		}
+	});
 }
 
 /**
@@ -38,6 +39,7 @@ function fetchEventData(id) {
  * @param {Object} eventData - data about requested event
  */
 function populateData(eventData) {
+	document.getElementById("event-id").value = id;
 	for (let item in eventData) {
 		//the key for each item should equal the id of the field
 		let itemElem = document.getElementById(item);
@@ -74,50 +76,35 @@ function indicateEditing() {
 	let a = document.createElement('a');
 		a.href = window.location.href;
 		let span = document.createElement('span');
-			span.class = 'link';
+			span.classList.add('link');
 			span.append('Editing');
 			a.append(span);
 		elem.append(a);
 	document.getElementById("links").append(elem); //add elem to navigation bar
+
+	//creates delete button
+	//<button id="delete-button">Delete</button>
+	let deleteButton = document.createElement("button");
+	deleteButton.id = "delete-button";
+	deleteButton.innerText = "Delete";
+	deleteButton.addEventListener("click", deleteEvent);
+	document.getElementById("body-container").append(deleteButton);
 }
-
-//document.addEventListener("DOMContentLoaded", editEvent);
-
-
-/** Submit Form **/
 
 /**
- * Submits new event or changes to existing event to server
- * @param {Event} event
+ * Sents post request to delete current event
  */
-function eventSubmit(event) {
-	event.preventDefault();
-	
-	//find data fields
-	let eventForm = document.getElementById("event-form");
-	let items = eventForm.getElementsByTagName("input");
-	
-	//store data in {Object} eventData
-	let eventData = {};
-	eventData["id"] = !newEvent ? id : -1;
-	for (let item of items) {
-		//interprets based on input type 
-		switch(item.type) {
-			case "submit":
-				break;
-			case "radio":
-				if (item.checked) eventData[item.id] = item.value;
-				break;
-			default:
-				eventData[item.id] = item.value;
-		}
+function deleteEvent() {
+	console.log(id);
+	if (confirm("Delete this event?")) {
+		postData("delete-event.json", 
+				JSON.stringify({"id":id}), 
+				"application/json")
+		.then(res => {
+			if (!res || !res.ok) alert("delete failed");
+			else window.location.replace("./index.html");
+		});
 	}
-	
-	//send object to server as json
-	let response = postData("event.json", JSON.stringify(eventData), "application/json");
-	
-	//verify data was sent successfully, alert user if not
-	if (!response) alert("Error: Request not recived");
-	else if (!response.ok) alert(`Request Failed: ${events.status}`);
 }
-document.addEventListener("load", () => { document.getElementById("event-form").onsubmit = eventSubmit; });
+
+document.addEventListener("DOMContentLoaded", editEvent);

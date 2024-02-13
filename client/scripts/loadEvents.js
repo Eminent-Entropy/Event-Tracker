@@ -2,17 +2,18 @@
  * Retrieves the list of events from the server and adds them respective to their section
  */
 function loadEvents() {
-	let events = fetchFile("events.json", "json");
-	//if server replies with requested data
-	if (events) {
-		events = events.parse(); //json -> object
-		for (let header in events) {
-			events[header].forEach((eventData) => {
-				addEvent(eventData, header);
-			});
+	fetchFile("events.json", "json").then((events) => {
+		//if server replies with requested data
+		if (events) {
+			for (let header in events) {
+				events[header].forEach((eventData) => {
+					addEvent(eventData, header);
+				});
+			}
 		}
-	}
-	else console.log("Could not retrieve event data");
+		else console.log("Could not retrieve event data");
+	});
+	
 }
 
 /**
@@ -25,4 +26,4 @@ function addEvent(eventData, header) {
 	document.getElementById(header).append(item.elem);
 }
 
-//document.addEventListener("DOMContentLoaded", loadEvents);
+document.addEventListener("DOMContentLoaded", loadEvents);

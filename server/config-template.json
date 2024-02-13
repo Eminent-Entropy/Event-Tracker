@@ -1,0 +1,11 @@
+{
+    "port": 80,
+    "filesFolder": "static",
+    "pgClient": {
+        "user": "",
+        "host": "127.0.0.1",
+        "database": "",
+        "password": "",
+        "port": ""
+    }
+}

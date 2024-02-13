@@ -1,11 +1,14 @@
-#event-form {
+#body-container {
 	margin-top: 20px;
 	width: 350px;
+}
+
+#event-form {
 	display: flex;
 	flex-direction: column;
 }
 
-#event-form input {
+#event-form input, #delete-button {
 	margin-bottom: 10px;
 	padding: 5px;
 	border: none;
@@ -13,7 +16,12 @@
 	background-color: var(--background-accent);
 }
 
-#submit:active {
+#delete-button {
+	width: 100%;
+}
+
+#submit:active, #delete-button:active {
 	background-color: var(--main-color);
 	color: var(--background-color);
 }
+

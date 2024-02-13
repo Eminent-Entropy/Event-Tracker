@@ -1,9 +1,9 @@
 {
-	"id": 1,
+	"event-id": 1,
 	"name": "Test Event",
 	"section": "accepted",
 	"startTime": "2023-04-30T08:30:00.000Z",
 	"endTime": "2023-04-30T09:30:00.000Z",
 	"people": "There are quite a few people involved",
-	"desc": "This would be a nice and long description about all the things we kinda wanna get up to ya know?"
+	"description": "This would be a nice and long description about all the things we kinda wanna get up to ya know?"
 }

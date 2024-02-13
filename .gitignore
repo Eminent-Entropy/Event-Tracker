@@ -1,0 +1,7 @@
+/server/static/*
+/server/config.json
+/server/pg-test.js
+/server/server-old.js
+/server/start-old.js
+/server/node_modules/
+/.git/

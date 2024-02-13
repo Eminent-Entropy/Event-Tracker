@@ -21,9 +21,10 @@
 		</div>
 		
 		<div id='body-container'>
-			<form id='event-form'>
+			<form id='event-form' action="/submit-event" method="post" enctype="application/x-www-form-urlencoded">
+				<input type="hidden" id="event-id" name="event-id" value="-1" />
 				<label for="name">Event Name: </label>
-				<input type="text" name="" id="name" required />
+				<input type="text" name="name" id="name" required />
 				<div id="section">
 					<input type="radio" name="section" id="proposed" value="proposed" required />
 					<label for="proposed">Proposed</label>

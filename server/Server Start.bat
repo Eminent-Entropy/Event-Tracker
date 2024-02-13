@@ -1,3 +1,3 @@
 @echo off
-node start.js
+node server.js
 pause
